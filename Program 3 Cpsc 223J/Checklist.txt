@@ -1,0 +1,5 @@
+CheckList
+
+Have the ball hit the walls and bounce back via borders
+calculate deltax and deltay with cos and sin in radians +
+Fix the UI to have all the buttons needed +
