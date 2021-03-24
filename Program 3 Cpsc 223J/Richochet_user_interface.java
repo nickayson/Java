@@ -17,8 +17,8 @@ import java.lang.Math;
 
 public class Richochet_user_interface extends JFrame
 {
-  final int frame_width = 900;
-  final int frame_height = 600;
+  final int frame_width = 1800;
+  final int frame_height = 980;
 
   private String ball_speed_pix_per_second;
   private double ballspeedpixpersecond;// = 88.437;
@@ -54,6 +54,7 @@ public class Richochet_user_interface extends JFrame
   private JTextField ylocation;
   //Inputs for the ball
   private JLabel refresh;
+  // private  JLabel refresh_output; //set as Label for now
   private JTextField refresh_output;
   private JLabel speed;
   private JTextField speed_output;
@@ -62,8 +63,6 @@ public class Richochet_user_interface extends JFrame
 
   //richochet_panel
   private Richochet_panel richochetpanel;
-  private final int richochet_panel_width = frame_width;
-  private final int richochet_panel_height = frame_height - title_panel_height - control_panel_height;
 
   private int act = 1; //starts at the first point
 
@@ -72,7 +71,7 @@ public class Richochet_user_interface extends JFrame
   private Timer motionclock;
   private Buttonhandlerclass buttonhandler;
   private Clockhandlerclass clockhandler;
-  // private final double refresh_clock_rate = 120.47;
+  private final double refresh_clock_rate = 120.47;
   private int refresh_clock_delay_interval;
   private final double motion_clock_rate = 99.873;
   private int motion_clock_delay_interval;
@@ -107,7 +106,6 @@ public class Richochet_user_interface extends JFrame
 
      //Middle Graphics Panel / richochet_panel
      richochetpanel = new Richochet_panel();
-     richochetpanel.setSize(richochet_panel_width, richochet_panel_height);
      add(richochetpanel, BorderLayout.CENTER);      //sets graphics panel to middle
 
      //Control panel
@@ -172,28 +170,29 @@ public class Richochet_user_interface extends JFrame
  {
      public void actionPerformed(ActionEvent event)
      {
-
-       ball_speed_pix_per_second = speed_output.getText();
-       ballspeedpixpersecond = Double.parseDouble(ball_speed_pix_per_second);
-       //Convert the speed of the ball from units pix/sec to pix/tic
-       ball_speed_pix_per_tic = ballspeedpixpersecond/motion_clock_rate;
-
-       ballrefreshrate = refresh_output.getText();
-       ballrefreshdouble = Double.parseDouble(ballrefreshrate);
-       //Set up the refresh clock
-       refresh_clock_delay_interval = (int)Math.round(millisecondpersecond/ballrefreshdouble);
-       refreshclock = new Timer(refresh_clock_delay_interval,clockhandler);
-
-       direction = direction_output.getText();
-       directionnum = Double.parseDouble(direction);
-       directionnumrad = Math.toRadians(directionnum);
-
-
        if(event.getSource() == start_button)
        {
-         deltax = ball_speed_pix_per_tic*(Math.cos(directionnumrad));
-         deltay = ball_speed_pix_per_tic*(Math.sin(directionnumrad));
-         richochetpanel.initializeobjectsinpanel(deltax, deltay, ball_speed_pix_per_tic);
+         //Set up the refresh clock
+         ballrefreshrate = refresh_output.getText();
+         ballrefreshdouble = Double.parseDouble(ballrefreshrate);
+         refresh_clock_delay_interval = (int)Math.round(millisecondpersecond/ballrefreshdouble);
+         refreshclock = new Timer(refresh_clock_delay_interval,clockhandler);
+
+         //Convert the speed of the ball from units pix/sec to pix/tic
+         ball_speed_pix_per_second = speed_output.getText();
+         ballspeedpixpersecond = Double.parseDouble(ball_speed_pix_per_second);
+         ball_speed_pix_per_tic = ballspeedpixpersecond/motion_clock_rate;
+
+         //get the direction degrees
+         direction = direction_output.getText();
+         directionnum = Double.parseDouble(direction);
+         // directionnumrad = Math.toRadians(directionnum);
+
+         //compute delatx and deltay and convert to radians
+         deltax = ball_speed_pix_per_tic*(Math.cos(Math.toRadians(directionnum)));
+         deltay = ball_speed_pix_per_tic*(Math.sin(Math.toRadians(directionnum)));
+
+         richochetpanel.initializeobjectsinpanel(deltax, deltay);
          richochetpanel.repaint();
          refreshclock.start();
          motionclock.start();
@@ -215,7 +214,7 @@ public class Richochet_user_interface extends JFrame
          direction_output.setText("");
          xlocation.setText("");
          ylocation.setText("");
-         richochetpanel.initializeobjectsinpanel(deltax, deltay, ball_speed_pix_per_tic);
+         richochetpanel.initializeobjectsinpanel(deltax, deltay);
          start_button.setEnabled(true);
        }
        else if(event.getSource() == quit_button)
@@ -248,6 +247,7 @@ public class Richochet_user_interface extends JFrame
           ylocation.setText(special_edition.format(v));
           if(!animation_continues)
             {
+
               motionclock.stop();
               refreshclock.stop();
             }
