@@ -38,6 +38,7 @@ import java.awt.Color;
 import java.awt.Font;
 import javax.swing.JPanel;
 import java.text.DecimalFormat;
+import java.lang.reflect.*;
 
 public class Cat_Mouse_panel extends JPanel
 {   private final int graphic_panel_width = 1800;
@@ -61,18 +62,26 @@ public class Cat_Mouse_panel extends JPanel
     private double deltay;                                 //Unit of incremental change in coordinates.
 
     private double catspeed;
+    private double mousespeed;
 
     private double a = 2.0;
 
     private double mdx;
     private double mdy;
+    private double mdxnew;
+    private double mdynew;
     private double cdx;
     private double cdy;
-    private double bigd;
+    private double cdxnew;
+    private double cdynew;
+    private double D;
+    private double gap;
     private double distance_center_of_ball_2_end_of_line_segment;
     private double distance_moved_in_one_tic;
     private boolean successfulmove = true;
     private double temporary;
+
+    private Game_user_interface gameuserinterface;
 
     public Cat_Mouse_panel()  //Constructor
     {
@@ -93,83 +102,115 @@ public class Cat_Mouse_panel extends JPanel
 
     }//end of method paintComponent
 
-    public void initializeobjectsinpanel(double mousedeltax, double mousedeltay, double catball_speed_pix_per_tic)
+    public void initializeobjectsinpanel(double mousedeltax, double mousedeltay, double mouseball_speed_pix_per_tic, double catball_speed_pix_per_tic)
     {
       mdx = mousedeltax;
       mdy = mousedeltay;
       catspeed = catball_speed_pix_per_tic;
-      bigd = Math.sqrt((Math.pow(catball_center_x - mouseball_center_x, 2)) + (Math.pow(catball_center_y - mouseball_center_y, 2)));
-      cdx = ((mouseball_center_x - catball_center_x)*catspeed)/bigd;
-      cdy = ((mouseball_center_y - catball_center_y)*catspeed)/bigd;
+      mousespeed = mouseball_speed_pix_per_tic;
     }//End of initializeobjectsinpanel
 
 
     public boolean mousemoveball() //function that moves the ball
     {
       successfulmove = true;
-      //move cat
-      catball_center_x = catball_center_x + cdx;
-      catball_center_y = catball_center_y + cdy;
-      //move ball
-      mouseball_center_x = mouseball_center_x + mdx;
-      mouseball_center_y = mouseball_center_y + mdy;
+      //Compute the distance between the center of cat and the center of mouse.  Let call that distance D.
+      D = Math.sqrt(Math.pow((mouseball_center_x - catball_center_x), 2)+ Math.pow((mouseball_center_y - catball_center_y),2));
 
-      //if the ball center touches the top of panel change direction
-      if (mouseball_center_y - mouseballradius <= 0)
-      {
-        mdy = -mdy;
-      }
-      //if ball center touches left sdie of panel
-      if (mouseball_center_x - mouseballradius <= 0)
-      {
-        mdx = -mdx;
-      }
-      //if the ball center touches the bottom of panel change direction
-      if (mouseball_center_y + mouseballradius > graphic_panel_height)
-      {
-        mdy = -mdy;
-      }
-      //for east side to move to touch panel
-      if (mouseball_center_x + mouseballradius > graphic_panel_width)
-      {
-        mdx = -mdx;
+      //Compute the physical gap between the two animals
+      gap = D - catballradius - mouseballradius;
+
+      //Check for collision with the other animal
+      if(mousespeed >= gap) //The mouse is so close to the cat that a collision will occur in the next step
+      {//In this case a new special pair of increments are computed: Δx_mouse_new & Δy_mouse_new for one time use.
+        mdxnew = (mouseball_center_x - catball_center_x) * gap / D;
+        mdynew = (mouseball_center_y - catball_center_y) * gap / D;
+        mouseball_center_x += mdxnew;
+        mouseball_center_y += mdynew;
       }
 
-
-
-      if(graphic_panel_width - mouseball_center_x - mouseballradius < mdx)
-      {
-        mouseball_center_x = graphic_panel_width - mouseballradius;
-      }
-      //for south side to touch panel
-      if(graphic_panel_height - mouseball_center_y - mouseballradius < mdy)
-      {
-        mouseball_center_y = graphic_panel_height - mouseballradius;
-      }
-      //north wall to touch panel
+      //Check north wall for possible collision
       if (mouseball_center_y - mouseballradius < mdy)
       {
         mouseball_center_y = mouseballradius;
+        mdy = -mdy; //Change sign
       }
-      //west wall to touchpanel
+
+
+      //Check west wall for possible collision
       if(mouseball_center_x - mouseballradius < mdx)
       {
         mouseball_center_x = mouseballradius;
+        mdx = -mdx; //Change sign
       }
-      // else{successfulmove = false;}
+
+      //Check south wall for possible collision
+      if(graphic_panel_height - mouseball_center_y - mouseballradius < mdy)
+      {
+        mouseball_center_y = graphic_panel_height - mouseballradius;
+        mdy = -mdy; //Change sign
+      }
+
+      //Check east wall for possible collision
+      if(graphic_panel_width - mouseball_center_x - mouseballradius < mdx)
+      {
+        mouseball_center_x = graphic_panel_width - mouseballradius;
+        mdx = -mdx; //Change sign
+      }
+
+      else //There is no collison pending, therefore make an ordinary move
+      {
+        mouseball_center_x += mdx;
+        mouseball_center_y += mdy;
+      }
+
+      if(gap <= 0.0)
+      {
+        gameuserinterface.change_clocks();
+      }
 
       return successfulmove;
     }//End of moveball
 
-    public double getxcenter_of_ball()
+    public boolean catmoveball()
     {
-     temporary = mouseball_center_x;
+      successfulmove = true;
+
+      //Compute the distance between the center of cat and the center of mouse.  Let call that distance D.
+      D = Math.sqrt(Math.pow((mouseball_center_x - catball_center_x), 2)+ Math.pow((mouseball_center_y - catball_center_y),2));
+
+      cdx = ((mouseball_center_x - catball_center_x)*catspeed)/D;
+      cdy = ((mouseball_center_y - catball_center_y)*catspeed)/D;
+
+
+      //Compute the physical gap between the two animals
+      gap = D - catballradius - mouseballradius;
+
+      if(gap <= 0.0)
+      {
+        gameuserinterface.change_clocks();
+      }
+
+      //Check to see if the gap is so small that a single step forward will collide with the mouse
+      if(catspeed <= gap)
+      {//The next step will not cause a collision; therefore, make an ordinary step forward.
+        catball_center_x += cdx;
+        catball_center_y += cdy;
+      }
+      else
+      {//The cat is very close to the mouse and a collision will occur in the next move.
+        cdxnew = (mouseball_center_x - catball_center_x) * gap / D;
+        cdynew = (mouseball_center_y - catball_center_y) * gap / D;
+        catball_center_x += cdxnew;
+        catball_center_y += cdynew;
+      }
+      return successfulmove;
+    }
+
+    public double getdistancebetween()
+    {
+     temporary = Math.sqrt(Math.pow((mouseball_center_x - catball_center_x), 2)+ Math.pow((mouseball_center_y - catball_center_y),2));
      return temporary;
     }
 
-    public double getycenter_of_ball()
-    {
-      temporary = mouseball_center_y;
-     return temporary;
-    }//End of method getycenter_of_ball
 }

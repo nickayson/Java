@@ -1,4 +1,9 @@
 fix graphic panel to look right*
 display the cat ball*
-make the cat ball curve
-make new clock for Cat
+make the cat ball curve*
+Make just 2 clocks for the cat and mouse which will repaint instead of the motion clock and refresh clock*
+find distance between the two*
+make mouse bounce correctly*
+make certain degrees work
+
+make game stop when collision happens*

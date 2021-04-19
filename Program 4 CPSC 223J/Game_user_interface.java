@@ -99,14 +99,15 @@ public class Game_user_interface extends JFrame
 
   private DecimalFormat special_edition;
   private Timer refreshclock;
-  private Timer motionclock;
+  private Timer mouseclock;
+  private Timer catclock;
   private Buttonhandlerclass buttonhandler;
   private Clockhandlerclass clockhandler;
   //set up refreshclock
   private final double refresh_clock_rate = 120;
   private int refresh_clock_delay_interval;
-  private final double motion_clock_rate = 99.873;
-  private int motion_clock_delay_interval;
+  private final double mouse_clock_rate = 99.873;
+  private int mouse_clock_delay_interval;
   private final double cat_clock_rate = 99.873;
   private int cat_clock_delay_interval;
   private final double millisecondpersecond = 1000.0;
@@ -116,6 +117,7 @@ public class Game_user_interface extends JFrame
   private double catdeltay;
   private double u, v;
   private boolean active = false;
+  private boolean clocks_are_ticking = false;
 
   public Game_user_interface()
   {
@@ -168,6 +170,7 @@ public class Game_user_interface extends JFrame
      //distance between two balls
      distance_between = new JLabel("Distance between");
      distance_between_text = new JTextField(8);
+     special_edition = new DecimalFormat("00.00");
 
 
      control_panel.add(clear_button);
@@ -190,17 +193,17 @@ public class Game_user_interface extends JFrame
      //create handler class for all clocks
      clockhandler = new Clockhandlerclass();
 
-     //Set up the motion clock
-     motion_clock_delay_interval = (int)Math.round(millisecondpersecond/motion_clock_rate);
-     motionclock = new Timer(motion_clock_delay_interval,clockhandler);
+     //Set up the mouse clock
+     mouse_clock_delay_interval = (int)Math.round(millisecondpersecond/mouse_clock_rate);
+     mouseclock = new Timer(mouse_clock_delay_interval,clockhandler);
+
+     cat_clock_delay_interval = (int)Math.round(millisecondpersecond/cat_clock_rate);
+     catclock = new Timer(cat_clock_delay_interval,clockhandler);
 
      //Set up the refresh clock
      refresh_clock_delay_interval = (int)Math.round(millisecondpersecond/refresh_clock_rate);
      refreshclock = new Timer(refresh_clock_delay_interval,clockhandler);
 
-     // //Set up the cat clock
-     // cat_clock_delay_interval = (int)Math.round(millisecondpersecond/cat_clock_rate);
-     // catclock = new Timer(cat_clock_delay_interval,clockhandler);
 
      setVisible(true);
    } //end of constructor
@@ -214,27 +217,27 @@ public class Game_user_interface extends JFrame
          //Convert the speed of the ball from units pix/sec to pix/tic
          mouseball_speed_pix_per_second = mouse_speed_output.getText();
          mouseballspeedpixpersecond = Double.parseDouble(mouseball_speed_pix_per_second);
-         mouseball_speed_pix_per_tic = mouseballspeedpixpersecond/motion_clock_rate;
+         mouseball_speed_pix_per_tic = mouseballspeedpixpersecond/mouse_clock_rate;
 
          //Convert the speed of the ball from units pix/sec to pix/tic
          catball_speed_pix_per_second = cat_speed_output.getText();
          catballspeedpixpersecond = Double.parseDouble(catball_speed_pix_per_second);
-         catball_speed_pix_per_tic = catballspeedpixpersecond/motion_clock_rate;
+         catball_speed_pix_per_tic = catballspeedpixpersecond/cat_clock_rate;
 
          //get the direction degrees
          direction = direction_output.getText();
          directionnum = Double.parseDouble(direction);
          // directionnumrad = Math.toRadians(directionnum);
 
-         // //compute delatx and deltay and convert to radians
+         //compute delatx and deltay and convert to radians
          mousedeltax = mouseball_speed_pix_per_tic*(Math.cos(Math.toRadians(directionnum)));
-         mousedeltay = mouseball_speed_pix_per_tic*(Math.sin(Math.toRadians(directionnum)));
+         mousedeltay = -(mouseball_speed_pix_per_tic*(Math.sin(Math.toRadians(directionnum))));
 
-         catmousepanel.initializeobjectsinpanel(mousedeltax, mousedeltay, catball_speed_pix_per_tic);
+         catmousepanel.initializeobjectsinpanel(mousedeltax, mousedeltay, mouseball_speed_pix_per_tic, catball_speed_pix_per_tic);
          catmousepanel.repaint();
          refreshclock.start();
-         motionclock.start();
-         // catclock.start();
+         catclock.start();
+         mouseclock.start();
          start_button.setEnabled(false);
          start_button.setLabel("Resume");
          pause_button.setEnabled(true);
@@ -243,7 +246,8 @@ public class Game_user_interface extends JFrame
        else if (event.getSource() == pause_button)
        {
          refreshclock.stop();
-         motionclock.stop();
+         mouseclock.stop();
+         catclock.stop();
          start_button.setEnabled(true);
          active = false;
        }
@@ -251,7 +255,9 @@ public class Game_user_interface extends JFrame
        {
          //everything clears
          mouse_speed_output.setText("");
+         cat_speed_output.setText("");
          direction_output.setText("");
+         distance_between_text.setText("");
          // richochetpanel.ball_center_x.setX(900);
          // richochetpanel.ball_center_y.setY(450);
          catmousepanel.repaint();    //makes the ball go back to original spot
@@ -278,18 +284,37 @@ public class Game_user_interface extends JFrame
         {
           catmousepanel.repaint();
         }
-     else if(event.getSource() == motionclock)
+     else if(event.getSource() == catclock)
         {
-          animation_continues = catmousepanel.mousemoveball();
-          if(!animation_continues)
-            {
-              motionclock.stop();
-              refreshclock.stop();
-            }
-        }//End of if(event.getSource() == motionclock)
+          catmousepanel.catmoveball();
+          u = catmousepanel.getdistancebetween();
+          distance_between_text.setText(special_edition.format(u));
+        }
+     else if(event.getSource() == mouseclock)
+        {
+          catmousepanel.mousemoveball();
+        }
      else
         System.out.printf("%s\n","There is a bug in one of the clocks.");
    }
  }
 
-}//end of Diamond_user_interface
+ //The pause button must be able to alternate between stop all three clocks and start all three clock.  The following function can do exactly that.  You will need to declare clocks_are_ticking as a boolean.  This function is called by the pause button handler.
+public void change_clocks()
+{
+  if(clocks_are_ticking)
+  {
+    refreshclock.stop();
+    catclock.stop();
+    mouseclock.stop();
+  }
+  else
+  {
+    refreshclock.start();
+    catclock.start();
+    mouseclock.start();
+  }
+  clocks_are_ticking = !clocks_are_ticking;
+}
+
+}//end of Game_user_interface
