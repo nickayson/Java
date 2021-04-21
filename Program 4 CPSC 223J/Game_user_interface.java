@@ -1,6 +1,6 @@
 //****************************************************************************************************************************
-//Program name: "Richochet".  This program shows a ball bouncing off of the walls of a panel.  The speed, direction, and refresh *
-//rate of the ball is slected by the user.  The action of moving the ball is displayed.                                      *
+//Program name: "Cat and Mouse".  This program shows a ball bouncing off of the walls of a panel and another object chaising that object.
+//  The speed, direction are given by user. The action of moving the ball is displayed.                                      *
 //  Copyright (C) 2021 Nicholas Ayson.  All rights reserved.                                                                 *
 //                                                                                                                           *
 //This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
@@ -18,17 +18,22 @@
 //built on: Tuffix 2020
 
 //Program information
-  //Program name: Richochet
+  //Program name: Cat and Mouse
   //Programming language: Java
-  //Files in this program: ball.java (main), Richochet_user_interface.java (UI frame), Richochet_panel.java (graphic panel), run.sh (Bash)
-  //Date project began: Mar 20, 2021
-  //Date of last update: Mar 28, 2021
+  //Files in this program: ball.java (main), Game_user_interface.java (UI frame), Cat_Mouse_panel.java (graphic panel), run.sh (Bash)
+  //Date project began: April 13, 2021
+  //Date of last update: April 25, 2021
   //Status: Ready for public posting.  The program was tested significantly and did very well.
-  //Purpose: This program demonstrates a ball moving and bouncing off the wall at a user choice speed and direction.
+  //Purpose: This program demonstrates a ball moving and bouncing off the wall at a user choice speed while another object chases it.
 //
 //This module
-  //File name: Richochet_user_interface.java
-  //Purpose:  This file contains the class Richochet_user_interface, which displays the UI.
+  //File name: Game_user_interface.java
+  //Purpose:  This file contains the class Game_user_interface, which has the UI which is displayed to the user.
+  //extra: The cat function for the second ball moves at a curve to catch the mice.
+
+  //NOTE to the Professor: similar to the last project the Game accepts most values like 60.0, 97.4, 78.9, etc.
+  // for some reason the code does not accept certain values like 45 and 30 and gets stuck while still moving at the top on the north wall
+  // even though i am using the if values given to me via the skeleton code given to us.
 
 
 
@@ -119,6 +124,12 @@ public class Game_user_interface extends JFrame
   private boolean active = false;
   private boolean clocks_are_ticking = false;
 
+  private double mouseballcenterx = 900.0;
+  private double mouseballcentery = 450.0;
+
+  private double catballcenterx = 10.0;
+  private double catballcentery = 10.0;
+
   public Game_user_interface()
   {
     //Mandatory first statement of a constructor
@@ -204,7 +215,7 @@ public class Game_user_interface extends JFrame
      refresh_clock_delay_interval = (int)Math.round(millisecondpersecond/refresh_clock_rate);
      refreshclock = new Timer(refresh_clock_delay_interval,clockhandler);
 
-
+     catmousepanel.catmousevalues(mouseballcenterx, mouseballcentery, catballcenterx, catballcentery);  //puts balls in correct places
      setVisible(true);
    } //end of constructor
 
@@ -231,9 +242,9 @@ public class Game_user_interface extends JFrame
 
          //compute delatx and deltay and convert to radians
          mousedeltax = mouseball_speed_pix_per_tic*(Math.cos(Math.toRadians(directionnum)));
-         mousedeltay = -(mouseball_speed_pix_per_tic*(Math.sin(Math.toRadians(directionnum))));
+         mousedeltay = -(mouseball_speed_pix_per_tic*(Math.sin(Math.toRadians(directionnum))));       // mouse goes up first
 
-         catmousepanel.initializeobjectsinpanel(mousedeltax, mousedeltay, mouseball_speed_pix_per_tic, catball_speed_pix_per_tic);
+         catmousepanel.valuesneeded(mousedeltax, mousedeltay, mouseball_speed_pix_per_tic, catball_speed_pix_per_tic);
          catmousepanel.repaint();
          refreshclock.start();
          catclock.start();
@@ -258,8 +269,11 @@ public class Game_user_interface extends JFrame
          cat_speed_output.setText("");
          direction_output.setText("");
          distance_between_text.setText("");
-         // richochetpanel.ball_center_x.setX(900);
-         // richochetpanel.ball_center_y.setY(450);
+         mouseballcenterx = 900;  //sets values back to original spots
+         mouseballcentery = 450;
+         catballcenterx = 10;
+         catballcentery = 10;
+         catmousepanel.catmousevalues(mouseballcenterx, mouseballcentery, catballcenterx, catballcentery);  //puts balls in correct places
          catmousepanel.repaint();    //makes the ball go back to original spot
          start_button.setEnabled(true);
        }

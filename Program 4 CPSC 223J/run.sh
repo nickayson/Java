@@ -2,7 +2,7 @@
 
 #Author: Nicholas Ayson
 #Program: Cat and mouse
-#Date completed: 2021-Mar-28
+#Date completed: 2021-Apr-25
 
 echo "Remove old byte-code files if any exist."
 rm *.class

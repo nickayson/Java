@@ -1,6 +1,6 @@
 //****************************************************************************************************************************
-//Program name: "Richochet".  This program shows a ball bouncing off of the walls of a panel.  The speed, direction, and refresh *
-//rate of the ball is slected by the user.  The action of moving the ball is displayed.                                      *
+//Program name: "Cat and Mouse".  This program shows a ball bouncing off of the walls of a panel and another object chaising that object.
+//  The speed, direction are given by user. The action of moving the ball is displayed.                                      *
 //  Copyright (C) 2021 Nicholas Ayson.  All rights reserved.                                                                 *
 //                                                                                                                           *
 //This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
@@ -18,17 +18,22 @@
 //built on: Tuffix 2020
 
 //Program information
-  //Program name: Richochet
+  //Program name: Cat and Mouse
   //Programming language: Java
-  //Files in this program: ball.java (main), Richochet_user_interface.java (UI frame), Richochet_panel.java (graphic panel), run.sh (Bash)
-  //Date project began: Mar 20, 2021
-  //Date of last update: Mar 28, 2021
+  //Files in this program: ball.java (main), Game_user_interface.java (UI frame), Cat_Mouse_panel.java (graphic panel), run.sh (Bash)
+  //Date project began: April 13, 2021
+  //Date of last update: April 25, 2021
   //Status: Ready for public posting.  The program was tested significantly and did very well.
-  //Purpose: This program demonstrates a ball moving and bouncing off the wall at a user choice speed and direction.
+  //Purpose: This program demonstrates a ball moving and bouncing off the wall at a user choice speed while another object chases it.
 //
 //This module
-  //File name: Richochet_panel.java
-  //Purpose:  This file contains the class Richochet_panel, which has the graphic panel which moves the ball.
+  //File name: Cat_Mouse_panel.java
+  //Purpose:  This file contains the class Cat_Mouse_panel, which has the graphic panel which moves both balls.
+  //extra: The cat function for the second ball moves at a curve to catch the mice.
+
+  //NOTE to the Professor: similar to the last project the Game accepts most values like 60.0, 97.4, 78.9, etc.
+  // for some reason the code does not accept certain values like 45 and 30 and gets stuck while still moving at the top on the north wall
+  // even though i am using the if values given to me via the skeleton code given to us.
 
 
 
@@ -46,13 +51,13 @@ public class Cat_Mouse_panel extends JPanel
 
     private final double mouseballradius = 7.0;
     private final double mouseballdiameter = 2.0 * mouseballradius;
-    private double mouseball_center_x = 900.0;
-    private double mouseball_center_y = 450.0;
+    private double mouseball_center_x;
+    private double mouseball_center_y;
 
     private final double catballradius = 10.0;
     private final double catballdiameter = 2.0 * catballradius;
-    private double catball_center_x = 10.0;
-    private double catball_center_y = 10.0;
+    private double catball_center_x;
+    private double catball_center_y;
 
     private double dtop;
     private double dleft;
@@ -102,7 +107,15 @@ public class Cat_Mouse_panel extends JPanel
 
     }//end of method paintComponent
 
-    public void initializeobjectsinpanel(double mousedeltax, double mousedeltay, double mouseball_speed_pix_per_tic, double catball_speed_pix_per_tic)
+    public void catmousevalues(double mouseballcenterx, double mouseballcentery, double catballcenterx, double catballcentery)
+    {
+      mouseball_center_x = mouseballcenterx;
+      mouseball_center_y = mouseballcentery;
+      catball_center_x = catballcenterx;
+      catball_center_y = catballcentery;
+    }
+
+    public void valuesneeded(double mousedeltax, double mousedeltay, double mouseball_speed_pix_per_tic, double catball_speed_pix_per_tic)
     {
       mdx = mousedeltax;
       mdy = mousedeltay;
@@ -111,9 +124,8 @@ public class Cat_Mouse_panel extends JPanel
     }//End of initializeobjectsinpanel
 
 
-    public boolean mousemoveball() //function that moves the ball
+    public void mousemoveball() //function that moves the ball
     {
-      successfulmove = true;
       //Compute the distance between the center of cat and the center of mouse.  Let call that distance D.
       D = Math.sqrt(Math.pow((mouseball_center_x - catball_center_x), 2)+ Math.pow((mouseball_center_y - catball_center_y),2));
 
@@ -121,6 +133,11 @@ public class Cat_Mouse_panel extends JPanel
       gap = D - catballradius - mouseballradius;
 
       //Check for collision with the other animal
+      if(gap <= 0.0)
+      {
+        gameuserinterface.change_clocks();
+      }
+
       if(mousespeed >= gap) //The mouse is so close to the cat that a collision will occur in the next step
       {//In this case a new special pair of increments are computed: Δx_mouse_new & Δy_mouse_new for one time use.
         mdxnew = (mouseball_center_x - catball_center_x) * gap / D;
@@ -135,22 +152,18 @@ public class Cat_Mouse_panel extends JPanel
         mouseball_center_y = mouseballradius;
         mdy = -mdy; //Change sign
       }
-
-
       //Check west wall for possible collision
       if(mouseball_center_x - mouseballradius < mdx)
       {
         mouseball_center_x = mouseballradius;
         mdx = -mdx; //Change sign
       }
-
       //Check south wall for possible collision
       if(graphic_panel_height - mouseball_center_y - mouseballradius < mdy)
       {
         mouseball_center_y = graphic_panel_height - mouseballradius;
         mdy = -mdy; //Change sign
       }
-
       //Check east wall for possible collision
       if(graphic_panel_width - mouseball_center_x - mouseballradius < mdx)
       {
@@ -163,18 +176,11 @@ public class Cat_Mouse_panel extends JPanel
         mouseball_center_x += mdx;
         mouseball_center_y += mdy;
       }
+      repaint();
+    }//End of moveball mouse
 
-      if(gap <= 0.0)
-      {
-        gameuserinterface.change_clocks();
-      }
-
-      return successfulmove;
-    }//End of moveball
-
-    public boolean catmoveball()
+    public void catmoveball()
     {
-      successfulmove = true;
 
       //Compute the distance between the center of cat and the center of mouse.  Let call that distance D.
       D = Math.sqrt(Math.pow((mouseball_center_x - catball_center_x), 2)+ Math.pow((mouseball_center_y - catball_center_y),2));
@@ -204,7 +210,7 @@ public class Cat_Mouse_panel extends JPanel
         catball_center_x += cdxnew;
         catball_center_y += cdynew;
       }
-      return successfulmove;
+      repaint();
     }
 
     public double getdistancebetween()
