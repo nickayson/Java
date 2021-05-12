@@ -22,7 +22,7 @@
   //Programming language: Java
   //Files in this program: ball.java (main), Game_user_interface.java (UI frame), Cat_Mouse_panel.java (graphic panel), run.sh (Bash)
   //Date project began: April 13, 2021
-  //Date of last update: April 25, 2021
+  //Date of last update: May 12, 2021
   //Status: Ready for public posting.  The program was tested significantly and did very well.
   //Purpose: This program demonstrates a ball moving and bouncing off the wall at a user choice speed while another object chases it.
 //
@@ -31,9 +31,11 @@
   //Purpose:  This file contains the class Game_user_interface, which has the UI which is displayed to the user.
   //extra: The cat function for the second ball moves at a curve to catch the mice.
 
-  //NOTE to the Professor: similar to the last project the Game accepts most values like 60.0, 97.4, 78.9, etc.
-  // for some reason the code does not accept certain values like 45 and 30 and gets stuck while still moving at the top on the north wall
-  // even though i am using the if values given to me via the skeleton code given to us.
+  //Speed works correctly for both
+  //double speed and same for twins good
+  //collision is sum of 2 radii
+  //walls are not damaged
+  //frame size is minimum for my monitor
 
 
 
@@ -57,10 +59,10 @@ import java.lang.Math;
 public class Game_user_interface extends JFrame
 {
   final int frame_width = 1800;
-  final int frame_height = 980;
+  final int frame_height = 980; //set to biggenst to where i could see it
 
   private String mouseball_speed_pix_per_second;
-  private double mouseballspeedpixpersecond;// = 88.437;
+  private double mouseballspeedpixpersecond;// = 88.437; to change it to double;
   private double mouseball_speed_pix_per_tic;
 
   private String catball_speed_pix_per_second;
@@ -97,10 +99,8 @@ public class Game_user_interface extends JFrame
   private JLabel directiondeg;
   private JTextField direction_output;
 
-  //richochet_panel
+  //Cat_Mouse_panel
   private Cat_Mouse_panel catmousepanel;
-
-  private int act = 1; //starts at the first point
 
   private DecimalFormat special_edition;
   private Timer refreshclock;
@@ -109,11 +109,13 @@ public class Game_user_interface extends JFrame
   private Buttonhandlerclass buttonhandler;
   private Clockhandlerclass clockhandler;
   //set up refreshclock
-  private final double refresh_clock_rate = 120;
+  private final double refresh_clock_rate = 120.00;
   private int refresh_clock_delay_interval;
-  private final double mouse_clock_rate = 99.873;
+  //mouse clock
+  private final double motion_clock_rate = 99.873;
   private int mouse_clock_delay_interval;
-  private final double cat_clock_rate = 99.873;
+  //cat clock
+  // private final double cat_clock_rate = 99.873;
   private int cat_clock_delay_interval;
   private final double millisecondpersecond = 1000.0;
   private double mousedeltax;
@@ -198,17 +200,15 @@ public class Game_user_interface extends JFrame
      control_panel.add(direction_output);
      add(control_panel, BorderLayout.SOUTH);
 
-
-
-
      //create handler class for all clocks
      clockhandler = new Clockhandlerclass();
 
      //Set up the mouse clock
-     mouse_clock_delay_interval = (int)Math.round(millisecondpersecond/mouse_clock_rate);
+     mouse_clock_delay_interval = (int)Math.round(millisecondpersecond/motion_clock_rate);
      mouseclock = new Timer(mouse_clock_delay_interval,clockhandler);
 
-     cat_clock_delay_interval = (int)Math.round(millisecondpersecond/cat_clock_rate);
+     //set up the cat clock
+     cat_clock_delay_interval = (int)Math.round(millisecondpersecond/motion_clock_rate);
      catclock = new Timer(cat_clock_delay_interval,clockhandler);
 
      //Set up the refresh clock
@@ -216,6 +216,7 @@ public class Game_user_interface extends JFrame
      refreshclock = new Timer(refresh_clock_delay_interval,clockhandler);
 
      catmousepanel.catmousevalues(mouseballcenterx, mouseballcentery, catballcenterx, catballcentery);  //puts balls in correct places
+
      setVisible(true);
    } //end of constructor
 
@@ -223,41 +224,45 @@ public class Game_user_interface extends JFrame
  {
      public void actionPerformed(ActionEvent event)
      {
+       //Convert the speed of the ball from units pix/sec to pix/tic
+       mouseball_speed_pix_per_second = mouse_speed_output.getText();
+       mouseballspeedpixpersecond = Double.parseDouble(mouseball_speed_pix_per_second);
+       mouseball_speed_pix_per_tic = mouseballspeedpixpersecond/motion_clock_rate;
+
+       //Convert the speed of the ball from units pix/sec to pix/tic
+       catball_speed_pix_per_second = cat_speed_output.getText();
+       catballspeedpixpersecond = Double.parseDouble(catball_speed_pix_per_second);
+       catball_speed_pix_per_tic = catballspeedpixpersecond/motion_clock_rate;
+
+       //get the direction degrees
+       direction = direction_output.getText();
+       directionnum = Double.parseDouble(direction); // double of the text
+       directionnumrad = Math.toRadians(directionnum);
+
+       //compute delatx and deltay and convert to radians
+       mousedeltax = Math.cos(directionnumrad);
+       mousedeltay = Math.sin(directionnumrad);       // mouse goes up first
+
+       double mousedx = mouseball_speed_pix_per_tic * mousedeltax;  //values to be passed to other panel.
+       double mousedy = -(mouseball_speed_pix_per_tic * mousedeltay);
+
+       catmousepanel.valuesneeded(mousedx, mousedy, mouseball_speed_pix_per_tic, catball_speed_pix_per_tic); //pass values to other panel
+
        if(event.getSource() == start_button)
        {
-         //Convert the speed of the ball from units pix/sec to pix/tic
-         mouseball_speed_pix_per_second = mouse_speed_output.getText();
-         mouseballspeedpixpersecond = Double.parseDouble(mouseball_speed_pix_per_second);
-         mouseball_speed_pix_per_tic = mouseballspeedpixpersecond/mouse_clock_rate;
-
-         //Convert the speed of the ball from units pix/sec to pix/tic
-         catball_speed_pix_per_second = cat_speed_output.getText();
-         catballspeedpixpersecond = Double.parseDouble(catball_speed_pix_per_second);
-         catball_speed_pix_per_tic = catballspeedpixpersecond/cat_clock_rate;
-
-         //get the direction degrees
-         direction = direction_output.getText();
-         directionnum = Double.parseDouble(direction);
-         // directionnumrad = Math.toRadians(directionnum);
-
-         //compute delatx and deltay and convert to radians
-         mousedeltax = mouseball_speed_pix_per_tic*(Math.cos(Math.toRadians(directionnum)));
-         mousedeltay = -(mouseball_speed_pix_per_tic*(Math.sin(Math.toRadians(directionnum))));       // mouse goes up first
-
-         catmousepanel.valuesneeded(mousedeltax, mousedeltay, mouseball_speed_pix_per_tic, catball_speed_pix_per_tic);
          catmousepanel.repaint();
-         refreshclock.start();
+         refreshclock.start();  //starts all the clocks
          catclock.start();
          mouseclock.start();
          start_button.setEnabled(false);
-         start_button.setLabel("Resume");
+         start_button.setLabel("Resume");   //sets the label to resume
          pause_button.setEnabled(true);
          active = true;
        }
        else if (event.getSource() == pause_button)
        {
          refreshclock.stop();
-         mouseclock.stop();
+         mouseclock.stop();   //stops all the clocks
          catclock.stop();
          start_button.setEnabled(true);
          active = false;
@@ -265,7 +270,7 @@ public class Game_user_interface extends JFrame
        else if(event.getSource() == clear_button)
        {
          //everything clears
-         mouse_speed_output.setText("");
+         mouse_speed_output.setText("");  //emptys all the text
          cat_speed_output.setText("");
          direction_output.setText("");
          distance_between_text.setText("");
@@ -277,7 +282,7 @@ public class Game_user_interface extends JFrame
          catmousepanel.repaint();    //makes the ball go back to original spot
          start_button.setEnabled(true);
        }
-       else if(event.getSource() == quit_button)
+       else if(event.getSource() == quit_button)  //exit
        {
          System.exit(0);
        }
@@ -293,7 +298,6 @@ public class Game_user_interface extends JFrame
  {
    public void actionPerformed(ActionEvent event)
    {
-     boolean animation_continues = false;
      if(event.getSource() == refreshclock)
         {
           catmousepanel.repaint();

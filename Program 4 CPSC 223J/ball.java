@@ -22,7 +22,7 @@
   //Programming language: Java
   //Files in this program: ball.java (main), Game_user_interface.java (UI frame), Cat_Mouse_panel.java (graphic panel), run.sh (Bash)
   //Date project began: April 13, 2021
-  //Date of last update: April 25, 2021
+  //Date of last update: May 12, 2021
   //Status: Ready for public posting.  The program was tested significantly and did very well.
   //Purpose: This program demonstrates a ball moving and bouncing off the wall at a user choice speed while another object chases it.
 //
@@ -30,9 +30,12 @@
   //File name: ball.java
   //Purpose:  This file contains the class ball, which displays the entire frame.
 
-  //NOTE to the Professor: similar to the last project the Game accepts most values like 60.0, 97.4, 78.9, etc.
-  // for some reason the code does not accept certain values like 45 and 30 and gets stuck while still moving at the top on the north wall
-  // even though i am using the if values given to me via the skeleton code given to us.
+
+  //Speed works correctly for both
+  //double speed and same for twins good
+  //collision is sum of 2 radii
+  //walls are not damaged
+  //frame size is minimum for my monitor
 
 
 

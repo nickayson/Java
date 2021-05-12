@@ -22,7 +22,7 @@
   //Programming language: Java
   //Files in this program: ball.java (main), Game_user_interface.java (UI frame), Cat_Mouse_panel.java (graphic panel), run.sh (Bash)
   //Date project began: April 13, 2021
-  //Date of last update: April 25, 2021
+  //Date of last update: May 12, 2021
   //Status: Ready for public posting.  The program was tested significantly and did very well.
   //Purpose: This program demonstrates a ball moving and bouncing off the wall at a user choice speed while another object chases it.
 //
@@ -31,9 +31,11 @@
   //Purpose:  This file contains the class Cat_Mouse_panel, which has the graphic panel which moves both balls.
   //extra: The cat function for the second ball moves at a curve to catch the mice.
 
-  //NOTE to the Professor: similar to the last project the Game accepts most values like 60.0, 97.4, 78.9, etc.
-  // for some reason the code does not accept certain values like 45 and 30 and gets stuck while still moving at the top on the north wall
-  // even though i am using the if values given to me via the skeleton code given to us.
+  //Speed works correctly for both
+  //double speed and same for twins good
+  //collision is sum of 2 radii
+  //walls are not damaged
+  //frame size is minimum for my monitor
 
 
 
@@ -44,13 +46,14 @@ import java.awt.Font;
 import javax.swing.JPanel;
 import java.text.DecimalFormat;
 import java.lang.reflect.*;
+import java.lang.*;
 
 public class Cat_Mouse_panel extends JPanel
 {   private final int graphic_panel_width = 1800;
     private final int graphic_panel_height = 870;
 
     private final double mouseballradius = 7.0;
-    private final double mouseballdiameter = 2.0 * mouseballradius;
+    private final double mouseballdiameter = 14.0;
     private double mouseball_center_x;
     private double mouseball_center_y;
 
@@ -65,6 +68,8 @@ public class Cat_Mouse_panel extends JPanel
     private double dright;
     private double deltax;                                 //Unit of incremental change in coordinates.
     private double deltay;                                 //Unit of incremental change in coordinates.
+
+    private double direction;
 
     private double catspeed;
     private double mousespeed;
@@ -99,7 +104,7 @@ public class Cat_Mouse_panel extends JPanel
       super.paintComponent(graphicarea);
       setBackground(Color.green);
       //draw mouseball
-      graphicarea.fillOval((int)(mouseball_center_x - mouseballradius), (int)(mouseball_center_y - mouseballradius),(int)(mouseballdiameter),(int)(mouseballdiameter));
+      graphicarea.fillOval((int)Math.round(mouseball_center_x - mouseballradius),(int)Math.round(mouseball_center_y - mouseballradius),(int)Math.round(mouseballdiameter),(int)Math.round(mouseballdiameter));
       //draw catball
       graphicarea.setColor(Color.white);
       graphicarea.fillOval((int)(catball_center_x - catballradius), (int)(catball_center_y - catballradius),(int)(catballdiameter),(int)(catballdiameter));
@@ -115,10 +120,10 @@ public class Cat_Mouse_panel extends JPanel
       catball_center_y = catballcentery;
     }
 
-    public void valuesneeded(double mousedeltax, double mousedeltay, double mouseball_speed_pix_per_tic, double catball_speed_pix_per_tic)
+    public void valuesneeded(double mousedx, double mousedy, double mouseball_speed_pix_per_tic, double catball_speed_pix_per_tic)
     {
-      mdx = mousedeltax;
-      mdy = mousedeltay;
+      mdx = mousedx;
+      mdy = mousedy;
       catspeed = catball_speed_pix_per_tic;
       mousespeed = mouseball_speed_pix_per_tic;
     }//End of initializeobjectsinpanel
@@ -138,39 +143,47 @@ public class Cat_Mouse_panel extends JPanel
         gameuserinterface.change_clocks();
       }
 
-      if(mousespeed >= gap) //The mouse is so close to the cat that a collision will occur in the next step
+      else if(mousespeed >= gap) //The mouse is so close to the cat that a collision will occur in the next step
       {//In this case a new special pair of increments are computed: Δx_mouse_new & Δy_mouse_new for one time use.
         mdxnew = (mouseball_center_x - catball_center_x) * gap / D;
         mdynew = (mouseball_center_y - catball_center_y) * gap / D;
         mouseball_center_x += mdxnew;
         mouseball_center_y += mdynew;
       }
-
       //Check north wall for possible collision
-      if (mouseball_center_y - mouseballradius < mdy)
+      if (mouseball_center_y - mouseballradius < 0)
       {
         mouseball_center_y = mouseballradius;
         mdy = -mdy; //Change sign
       }
+      else if (mouseball_center_y + mouseballradius > graphic_panel_height)
+      {
+        mouseball_center_x = graphic_panel_height - mouseballradius;
+        mdy = -mdy;
+      }
       //Check west wall for possible collision
-      if(mouseball_center_x - mouseballradius < mdx)
+      if(mouseball_center_x - mouseballradius < 0)
       {
         mouseball_center_x = mouseballradius;
         mdx = -mdx; //Change sign
       }
+      else if(mouseball_center_x + mouseballradius > graphic_panel_width)
+      {
+        mouseball_center_x = graphic_panel_width - mouseballradius;
+        mdx = -mdx;
+      }
       //Check south wall for possible collision
-      if(graphic_panel_height - mouseball_center_y - mouseballradius < mdy)
+      else if(graphic_panel_height - mouseball_center_y - mouseballradius < mdy)
       {
         mouseball_center_y = graphic_panel_height - mouseballradius;
         mdy = -mdy; //Change sign
       }
       //Check east wall for possible collision
-      if(graphic_panel_width - mouseball_center_x - mouseballradius < mdx)
+      else if(graphic_panel_width - mouseball_center_x - mouseballradius < mdx)
       {
         mouseball_center_x = graphic_panel_width - mouseballradius;
         mdx = -mdx; //Change sign
       }
-
       else //There is no collison pending, therefore make an ordinary move
       {
         mouseball_center_x += mdx;
