@@ -21,3 +21,9 @@ This program demonstrates a ball moving and bouncing off the wall at a user choi
 Program 4 consists of a game where the same ball (mouse) that was provided in program 3 is chased by a bigger ball (ball) and both stop once they collide
 
  This program demonstrates a ball moving and bouncing off the wall at a user choice speed while another object chases it.
+ 
+ -JAVA PROJECTS
+
+
+-![grab-landing-page](https://github.com/nickayson/nickayson/blob/main/giphy%20(1).gif)
+-![grab-landing-page](https://github.com/nickayson/nickayson/blob/main/giphy.gif)
