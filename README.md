@@ -1,6 +1,6 @@
 # Java-223J
-Java code from school
-
+GUI User Interface Challenges Created in Java.  
+  
 California State University Fullerton
 
 Program 1 consists of a Payroll Calculator interface that calculates the payroll of the person based on the amount of hours they worked
