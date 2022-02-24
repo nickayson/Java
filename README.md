@@ -22,6 +22,8 @@ Program 4 consists of a game where the same ball (mouse) that was provided in pr
 
  This program demonstrates a ball moving and bouncing off the wall at a user choice speed while another object chases it.
  
+ Enviroment: Ubuntu 
+ 
  -JAVA PROJECTS
 
 
